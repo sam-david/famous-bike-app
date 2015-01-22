@@ -8,33 +8,33 @@ var Transform = famous.core.Transform;
 var Transitionable = famous.transitions.Transitionable;
 var ImageSurface = famous.surfaces.ImageSurface;
 var Surface = famous.core.Surface;
+var MouseSync = famous.inputs.MouseSync;
 
 // snap transition import, not currently using
 // var SnapTransition = famous.transitions.SnapTransition;
 // Transitionable.registerMethod('snap', SnapTransition);
 
-var MouseSync = famous.inputs.MouseSync;
-
 // create the main context
 var mainContext = Engine.createContext();
 
 var wheelPosition = [0,0];
-var leftWheelPosition = [30, -290];
-var framePosition = [0, -400]
+var leftWheelPosition = [0, -295];
+var framePosition = [-150, -330];
+var saddlePosition = [-600, -470];
 
 // set transitionables for each item 
-var position = new Transitionable([0, 0]);
 var jamaicanFramePosition = new Transitionable([0, 0]);
 var jamaicanFrameSync = new MouseSync();
 var stateWheelPosition = new Transitionable([0, 0]);
+var stateWheelRightPosition = new Transitionable([0, 0]);
 var stateWheelSync = new MouseSync();
+var stateSaddlePosition = new Transitionable([0, 0]);
+var stateSaddleSync = new MouseSync();
 
 
-var sync = new MouseSync();
-
-
+//Background and platform surface and origin modifiers
 var background = new Surface({
-	size: [1000, 600],
+	size: [1200, 850],
 	properties: {
 		backgroundColor: 'white',
 		border: 'black solid 1px',
@@ -43,7 +43,7 @@ var background = new Surface({
 });
 
 var platform = new Surface({
-	size: [800, 370],
+	size: [800, 480],
 	content: 'platform',
 	properties: {
 		backgroundColor: 'grey',
@@ -56,19 +56,15 @@ var platformOriginModifier = new StateModifier({
 	transform: Transform.translate(100, 10, 0)
 })
 
-// var bike = new Surface({
-// 	size: [500,300],
-// 	content: 'bike',
-// 	properties: {
-// 		backgroundColor: 'grey',
-// 		textAlign: 'center',
-// 		color: 'white'
-// 	}
-// });
+//Bike Part surfaces
+//Jamaican Frame
 
 var jamaicanFrame = new ImageSurface({
 	size: [500,329],
-	content: '../images/jamaican-frame.png'
+	content: '../images/jamaican-frame.png',
+	properties: {
+		zIndex: 10
+	}
 });
 
 var jamaicanOriginModifier = new StateModifier({
@@ -77,49 +73,54 @@ var jamaicanOriginModifier = new StateModifier({
 
 jamaicanFrame.pipe(jamaicanFrameSync);
 
-// var wheel = new Surface({
-// 	size: [100,100],
-// 	content: 'wheel',
-// 	properties: {
-// 		backgroundColor: 'blue',
-// 		textAlign: 'center',
-// 		color: 'white'
-// 	}
-// });
+//State Wheel
 
 var stateWheel = new ImageSurface({
-	size: [200,200],
-	content: '../images/state-wheel.png'
+	size: [300,300],
+	content: '../images/state-wheel.png',
+	properties: {
+		zIndex: 1
+	}
 });
 
 var stateOriginModifier = new StateModifier({
-	transform: Transform.translate(200, 400, 0)
+	transform: Transform.translate(120, 470, 0)
 })
 
 stateWheel.pipe(stateWheelSync);
 
-// wheel.pipe(sync);
+var stateWheelRight = new ImageSurface({
+	size: [300,300],
+	content: '../images/state-wheel.png',
+	properties: {
+		zIndex: 1
+	}
+});
 
-// var frame = new Surface({
-// 	size: [100,100],
-// 	content: 'frame',
-// 	properties: {
-// 		backgroundColor: 'blue',
-// 		textAlign: 'center',
-// 		color: 'white'
-// 	}
-// })
+var stateWheelRightOriginModifier = new StateModifier({
+	transform: Transform.translate(120, 470, 0)
+})
 
-// frame.pipe(frameSync);
+stateWheelRight.pipe(stateWheelSync);
 
-// sync.on('update', function(data){
-// 		var dx = data.delta[0];
-// 		var dy = data.delta[1];
-// 		var p = position.get()
-// 		var x = p[0] + dx;
-// 		var y = p[1] + dy;
-// 		position.set([x, y]);
-// });
+//State Saddle
+
+var stateSaddle = new ImageSurface({
+	size: [130,93],
+	content: '../images/state-saddle.png',
+	properties: {
+		zIndex: 1
+	}
+});
+
+var stateSaddleOriginModifier = new StateModifier({
+	transform: Transform.translate(900, 500, 0)
+})
+
+stateSaddle.pipe(stateSaddleSync);
+
+//Sync update and end functions
+//Jamaican Sync
 
 jamaicanFrameSync.on('update', function(data){
 		var dx = data.delta[0];
@@ -134,7 +135,7 @@ jamaicanFrameSync.on('end', function(data) {
 	var inX = data.clientX < 780 &&
 		          data.clientX > 110
 
-	var inY = data.clientY < 350 &&
+	var inY = data.clientY < 450 &&
 							data.clientY > 10
 
 	if (inX && inY) {
@@ -145,46 +146,60 @@ jamaicanFrameSync.on('end', function(data) {
 	console.log(inX, inY)
 });
 
+//State wheel sync (kind of dry)
+
 stateWheelSync.on('update', function(data){
 		var dx = data.delta[0];
 		var dy = data.delta[1];
 		var p = stateWheelPosition.get()
+		var wheelR = stateWheelRightPosition.get();
 		var x = p[0] + dx;
 		var y = p[1] + dy;
 		stateWheelPosition.set([x, y]);
+		stateWheelRightPosition.set([x, y]);
 });
 
 stateWheelSync.on('end', function(data) {
 	var inX = data.clientX < 780 &&
 		          data.clientX > 110
 
-	var inY = data.clientY < 350 &&
+	var inY = data.clientY < 450 &&
 							data.clientY > 10
 
 	if (inX && inY) {
 		snapToPlatform(stateWheelPosition,leftWheelPosition);
+		snapToPlatform(stateWheelRightPosition,[0,20]);
 	} else {
 		snapBack(stateWheelPosition);
 	}
 	console.log(inX, inY)
 });
 
-// sync.on('end', function(data){
-// 	// console.log(data);
-// 	var inX = data.clientX < 780 &&
-// 	          data.clientX > 110
+//State Saddle sync (super dry)
 
-// 	var inY = data.clientY < 300 &&
-// 						data.clientY > 10
+stateSaddleSync.on('update', function(data){
+		var dx = data.delta[0];
+		var dy = data.delta[1];
+		var p = stateSaddlePosition.get()
+		var x = p[0] + dx;
+		var y = p[1] + dy;
+		stateSaddlePosition.set([x, y]);
+});
 
-// 	if (inX && inY) {
-// 		snapToPlatform(position,leftWheelPosition);
-// 	} else {
-// 		console.log('get back');
-// 		snapBack(position);
-// 	}
-// 	console.log(inX, inY)
-// });
+stateSaddleSync.on('end', function(data) {
+	var inX = data.clientX < 780 &&
+		          data.clientX > 110
+
+	var inY = data.clientY < 450 &&
+							data.clientY > 10
+
+	if (inX && inY) {
+		snapToPlatform(stateSaddlePosition,saddlePosition);
+	} else {
+		snapBack(stateSaddlePosition);
+	}
+	console.log(inX, inY)
+});
 
 function snapToPlatform(trans, itemPosition) {
 	console.log('snapping to platform');
@@ -203,26 +218,7 @@ function snapBack(trans) {
 	})
 }
 
-
-
-// var bikeOriginModifier = new StateModifier({
-// 	// origin: [0.5, 0.5],
-//  //  align: [0.5, 0.3]
-// 	transform: Transform.translate(100, 10, 0)
-// })
-
-// var wheelOriginModifier = new StateModifier({
-// 	origin: [0.5, 0.5],
-//   align: [0.2, 0.8]
-// })
-
-// var wheelPositionModifier = new Modifier({
-// 	transform : function(){
-// 		var p = position.get()
-// 		return Transform.translate(p[0], p[1], 0);
-// 	}
-// });
-
+//Position modifiers to follow dragging of mouse
 var jamaicanPositionModifier = new Modifier({
 	transform : function(){
 		var p = jamaicanFramePosition.get()
@@ -237,11 +233,25 @@ var statePositionModifier = new Modifier({
 	}
 });
 
+var stateSaddlePositionModifier = new Modifier({
+	transform : function(){
+		var p = stateSaddlePosition.get()
+		return Transform.translate(p[0], p[1], 0);
+	}
+});
 
+var stateWheelRightPositionModifier = new Modifier({
+	transform : function(){
+		var p = stateWheelRightPosition.get()
+		return Transform.translate(p[0], p[1], 0);
+	}
+});
 
 mainContext.add(background)
 mainContext.add(platformOriginModifier).add(platform);
 mainContext.add(jamaicanOriginModifier).add(jamaicanPositionModifier).add(jamaicanFrame);
 mainContext.add(stateOriginModifier).add(statePositionModifier).add(stateWheel);
+mainContext.add(stateWheelRightOriginModifier).add(stateWheelRightPositionModifier).add(stateWheelRight);
+mainContext.add(stateSaddleOriginModifier).add(stateSaddlePositionModifier).add(stateSaddle);
 // mainContext.add(bikeOriginModifier).add(bike);
 // mainContext.add(wheelOriginModifier).add(wheelPositionModifier).add(wheel);
