@@ -9,10 +9,23 @@ var Transitionable = famous.transitions.Transitionable;
 var ImageSurface = famous.surfaces.ImageSurface;
 var Surface = famous.core.Surface;
 var MouseSync = famous.inputs.MouseSync;
+var Easing = famous.transitions.Easing;
 
 // snap transition import, not currently using
-// var SnapTransition = famous.transitions.SnapTransition;
-// Transitionable.registerMethod('snap', SnapTransition);
+var SnapTransition = famous.transitions.SnapTransition;
+Transitionable.registerMethod('snap', SnapTransition);
+
+var snap = {
+	method: 'snap',
+	duration: 2000,
+	dampeningRatio: 1
+}
+
+var snapSlow = {
+	method: 'snap',
+	duration: 3400,
+	dampeningRatio: 1
+}
 
 // create the main context
 var mainContext = Engine.createContext();
@@ -279,7 +292,7 @@ jamaicanFrameSync.on('end', function(data) {
 							data.clientY > 10
 
 	if (inX && inY) {
-		jamaicanScaleModifier.setTransform(Transform.scale(1,1,1),{duration: 700})
+		jamaicanScaleModifier.setTransform(Transform.scale(1,1,1),{duration: 300})
 		snapToPlatform(jamaicanFramePosition,framePosition);
 
 	} else {
@@ -417,16 +430,15 @@ brooksSaddleSync.on('end', function(data) {
 
 function snapToPlatform(trans, itemPosition) {
 	console.log('snapping to platform');
+	// trans.set(itemPosition, snap)
 	trans.set(itemPosition, {
 		duration: 800
-		// method  : 'snap',
-    // period  : 100
-    // velocity : velocity[0]
 	})
 }
 
 function snapBack(trans,scaleMod) {
 	console.log('snapping back');
+	// trans.set([0,0], snap)
 	trans.set([0,0], {
 		duration: 800
 	})
