@@ -36,6 +36,7 @@ var rightWheelPosition = [440, -375];
 var vigorLeftWheelPosition = [-68, -375];
 var vigorRightWheelPosition = [372, -375];
 var framePosition = [-150, -480];
+var framePosition2 = [-250, -473];
 var saddlePosition = [-380, -515];
 var saddlePosition2 = [-458, -525];
 
@@ -43,6 +44,8 @@ var saddlePosition2 = [-458, -525];
 var jamaicanFramePosition = new Transitionable([0, 0]);
 var jamaicanFrameSync = new MouseSync();
 var jamaicanFrameScale = new Transitionable(0);
+var bomberFramePosition = new Transitionable([0, 0]);
+var bomberFrameSync = new MouseSync();
 var stateWheelPosition = new Transitionable([0, 0]);
 var stateWheelRightPosition = new Transitionable([0, 0]);
 var stateWheelSync = new MouseSync();
@@ -155,6 +158,27 @@ var jamaicanScaleModifier = new StateModifier({
 })
 
 jamaicanFrame.pipe(jamaicanFrameSync);
+
+//Bomber Frame
+
+var bomberFrame = new ImageSurface({
+	size: [500,322],
+	content: '../images/bomber-frame.png',
+	properties: {
+		zIndex: 10
+	}
+});
+
+var bomberOriginModifier = new StateModifier({
+	// origin: [0.5,0.5],
+	transform: Transform.translate(500, 550, 0)
+})
+
+var bomberScaleModifier = new StateModifier({
+	transform: Transform.scale(.2, .2, 1)
+})
+
+bomberFrame.pipe(bomberFrameSync);
 
 //State Wheel
 
@@ -298,6 +322,35 @@ jamaicanFrameSync.on('end', function(data) {
 	} else {
 		jamaicanScaleModifier.setTransform(Transform.scale(.2,.2,1),{duration: 700})
 		snapBack(jamaicanFramePosition,jamaicanScaleModifier);
+	}
+	console.log(inX, inY)
+});
+
+//Bomber Sync
+
+bomberFrameSync.on('update', function(data){
+		var dx = data.delta[0];
+		var dy = data.delta[1];
+		var p = bomberFramePosition.get()
+		var x = p[0] + dx;
+		var y = p[1] + dy;
+		bomberFramePosition.set([x, y]);
+});
+
+bomberFrameSync.on('end', function(data) {
+	var inX = data.clientX < 780 &&
+		          data.clientX > 110
+
+	var inY = data.clientY < 480 &&
+							data.clientY > 10
+
+	if (inX && inY) {
+		bomberScaleModifier.setTransform(Transform.scale(1,1,1),{duration: 300})
+		snapToPlatform(bomberFramePosition,framePosition2);
+
+	} else {
+		bomberScaleModifier.setTransform(Transform.scale(.2,.2,1),{duration: 700})
+		snapBack(bomberFramePosition,bomberScaleModifier);
 	}
 	console.log(inX, inY)
 });
@@ -453,6 +506,13 @@ var jamaicanPositionModifier = new Modifier({
 	}
 });
 
+var bomberPositionModifier = new Modifier({
+	transform : function(){
+		var p = bomberFramePosition.get()
+		return Transform.translate(p[0], p[1], 0);
+	}
+});
+
 var statePositionModifier = new Modifier({
 	transform : function(){
 		var p = stateWheelPosition.get()
@@ -502,6 +562,7 @@ mainContext.add(saddlePlatformOriginModifier).add(saddlePlatform);
 mainContext.add(wheelPlatformOriginModifier).add(wheelPlatform);
 mainContext.add(bikeStatsOriginModifier).add(bikeStats);
 mainContext.add(jamaicanOriginModifier).add(jamaicanPositionModifier).add(jamaicanScaleModifier).add(jamaicanFrame);
+mainContext.add(bomberOriginModifier).add(bomberPositionModifier).add(bomberScaleModifier).add(bomberFrame);
 mainContext.add(stateOriginModifier).add(statePositionModifier).add(stateWheelLeftScaleModifier).add(stateWheel);
 mainContext.add(stateWheelRightOriginModifier).add(stateWheelRightPositionModifier).add(stateWheelRightScaleModifier).add(stateWheelRight);
 mainContext.add(vigorWheelLeftOriginModifier).add(vigorWheelLeftPositionModifier).add(vigorWheelLeftScaleModifier).add(vigorWheelLeft);
