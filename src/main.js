@@ -57,6 +57,84 @@ var stateSaddleSync = new MouseSync();
 var brooksSaddlePosition = new Transitionable([0, 0]);
 var brooksSaddleSync = new MouseSync();
 
+function addWheels(imageUrl,xOrigin,yOrigin,xScale,yScale) {
+	this.addImageSurface = new ImageSurface({
+		size: [300,300],
+		content: imageUrl,
+		properties: {
+			zIndex: 1
+		}
+	});
+
+	var stateWheelRightOriginModifier = new StateModifier({
+		transform: Transform.translate(xOrigin, yOrigin, 0)
+	})
+
+	var stateWheelRightScaleModifier = new StateModifier({
+		transform: Transform.scale(xScale, yScale, 1)
+	});
+
+	this.addImageSurface.pipe(stateWheelSync);
+}
+
+function addFrame(imageUrl,xOrigin,yOrigin,xScale,yScale) {
+	this.framePosition = new Transitionable([0, 0]);
+	this.mouseFrameSync = new MouseSync();
+	this.addImageSurface = new ImageSurface({
+		size: [500,322],
+		content: imageUrl,
+		properties: {
+			zIndex: 10
+		}
+	});
+	this.originModifier = new StateModifier({
+		transform: Transform.translate(xOrigin, yOrigin, 0)
+	});
+
+	this.scaleModifier = new StateModifier({
+		transform: Transform.scale(xScale, yScale, 1)
+	})
+
+	this.positionModifier = new Modifier({
+		transform : function(){
+			var p = that.framePosition.get()
+			return Transform.translate(p[0], p[1], 0);
+		}
+	});
+
+	this.addImageSurface.pipe(this.mouseFrameSync);
+	var that = this
+	this.mouseFrameSync.on('update', function(data){
+		var dx = data.delta[0];
+		var dy = data.delta[1];
+		var p = that.framePosition.get()
+		var x = p[0] + dx;
+		var y = p[1] + dy;
+		that.framePosition.set([x, y]);
+		console.log("moving to",x,y);
+	});
+
+	this.mouseFrameSync.on('end', function(data) {
+		var inX = data.clientX < 780 &&
+			          data.clientX > 110
+
+		var inY = data.clientY < 480 &&
+								data.clientY > 10
+		console.log(inX,inY);
+		if (inX && inY) {
+			that.scaleModifier.setTransform(Transform.scale(1,1,1),{duration: 300})
+			snapToPlatform(that.framePosition,framePosition);
+
+		} else {
+			that.scaleModifier.setTransform(Transform.scale(.2,.2,1),{duration: 700})
+			snapBack(that.framePosition,jamaicanScaleModifier);
+		}
+		console.log(inX, inY)
+	});
+	mainContext.add(this.originModifier).add(this.positionModifier).add(this.scaleModifier).add(this.addImageSurface);
+}
+
+bomberBikeBitch = new addFrame('../images/bomber-frame.png',500,550,.2,.2);
 
 //Background and platform surface and origin modifiers
 var background = new Surface({
@@ -161,24 +239,24 @@ jamaicanFrame.pipe(jamaicanFrameSync);
 
 //Bomber Frame
 
-var bomberFrame = new ImageSurface({
-	size: [500,322],
-	content: '../images/bomber-frame.png',
-	properties: {
-		zIndex: 10
-	}
-});
+// var bomberFrame = new ImageSurface({
+// 	size: [500,322],
+// 	content: '../images/bomber-frame.png',
+// 	properties: {
+// 		zIndex: 10
+// 	}
+// });
 
-var bomberOriginModifier = new StateModifier({
-	// origin: [0.5,0.5],
-	transform: Transform.translate(500, 550, 0)
-})
+// var bomberOriginModifier = new StateModifier({
+// 	// origin: [0.5,0.5],
+// 	transform: Transform.translate(500, 550, 0)
+// })
 
-var bomberScaleModifier = new StateModifier({
-	transform: Transform.scale(.2, .2, 1)
-})
+// var bomberScaleModifier = new StateModifier({
+// 	transform: Transform.scale(.2, .2, 1)
+// })
 
-bomberFrame.pipe(bomberFrameSync);
+// bomberFrame.pipe(bomberFrameSync);
 
 //State Wheel
 
@@ -328,32 +406,32 @@ jamaicanFrameSync.on('end', function(data) {
 
 //Bomber Sync
 
-bomberFrameSync.on('update', function(data){
-		var dx = data.delta[0];
-		var dy = data.delta[1];
-		var p = bomberFramePosition.get()
-		var x = p[0] + dx;
-		var y = p[1] + dy;
-		bomberFramePosition.set([x, y]);
-});
+// bomberFrameSync.on('update', function(data){
+// 		var dx = data.delta[0];
+// 		var dy = data.delta[1];
+// 		var p = bomberFramePosition.get()
+// 		var x = p[0] + dx;
+// 		var y = p[1] + dy;
+// 		bomberFramePosition.set([x, y]);
+// });
 
-bomberFrameSync.on('end', function(data) {
-	var inX = data.clientX < 780 &&
-		          data.clientX > 110
+// bomberFrameSync.on('end', function(data) {
+// 	var inX = data.clientX < 780 &&
+// 		          data.clientX > 110
 
-	var inY = data.clientY < 480 &&
-							data.clientY > 10
+// 	var inY = data.clientY < 480 &&
+// 							data.clientY > 10
 
-	if (inX && inY) {
-		bomberScaleModifier.setTransform(Transform.scale(1,1,1),{duration: 300})
-		snapToPlatform(bomberFramePosition,framePosition2);
+// 	if (inX && inY) {
+// 		bomberScaleModifier.setTransform(Transform.scale(1,1,1),{duration: 300})
+// 		snapToPlatform(bomberFramePosition,framePosition2);
 
-	} else {
-		bomberScaleModifier.setTransform(Transform.scale(.2,.2,1),{duration: 700})
-		snapBack(bomberFramePosition,bomberScaleModifier);
-	}
-	console.log(inX, inY)
-});
+// 	} else {
+// 		bomberScaleModifier.setTransform(Transform.scale(.2,.2,1),{duration: 700})
+// 		snapBack(bomberFramePosition,bomberScaleModifier);
+// 	}
+// 	console.log(inX, inY)
+// });
 
 //State wheel sync (kind of dry)
 
@@ -506,12 +584,12 @@ var jamaicanPositionModifier = new Modifier({
 	}
 });
 
-var bomberPositionModifier = new Modifier({
-	transform : function(){
-		var p = bomberFramePosition.get()
-		return Transform.translate(p[0], p[1], 0);
-	}
-});
+// var bomberPositionModifier = new Modifier({
+// 	transform : function(){
+// 		var p = bomberFramePosition.get()
+// 		return Transform.translate(p[0], p[1], 0);
+// 	}
+// });
 
 var statePositionModifier = new Modifier({
 	transform : function(){
@@ -562,7 +640,7 @@ mainContext.add(saddlePlatformOriginModifier).add(saddlePlatform);
 mainContext.add(wheelPlatformOriginModifier).add(wheelPlatform);
 mainContext.add(bikeStatsOriginModifier).add(bikeStats);
 mainContext.add(jamaicanOriginModifier).add(jamaicanPositionModifier).add(jamaicanScaleModifier).add(jamaicanFrame);
-mainContext.add(bomberOriginModifier).add(bomberPositionModifier).add(bomberScaleModifier).add(bomberFrame);
+// mainContext.add(bomberOriginModifier).add(bomberPositionModifier).add(bomberScaleModifier).add(bomberFrame);
 mainContext.add(stateOriginModifier).add(statePositionModifier).add(stateWheelLeftScaleModifier).add(stateWheel);
 mainContext.add(stateWheelRightOriginModifier).add(stateWheelRightPositionModifier).add(stateWheelRightScaleModifier).add(stateWheelRight);
 mainContext.add(vigorWheelLeftOriginModifier).add(vigorWheelLeftPositionModifier).add(vigorWheelLeftScaleModifier).add(vigorWheelLeft);
