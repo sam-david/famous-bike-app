@@ -58,6 +58,7 @@ var brooksSaddlePosition = new Transitionable([0, 0]);
 var brooksSaddleSync = new MouseSync();
 
 function addWheels(imageUrl,xOrigin,yOrigin,xScale,yScale) {
+	//insert image surface with imageUrl reference
 	this.addImageSurface = new ImageSurface({
 		size: [300,300],
 		content: imageUrl,
@@ -77,9 +78,13 @@ function addWheels(imageUrl,xOrigin,yOrigin,xScale,yScale) {
 	this.addImageSurface.pipe(stateWheelSync);
 }
 
-function addFrame(imageUrl,xOrigin,yOrigin,xScale,yScale) {
+function addFrame(imageUrl,xOrigin,yOrigin,xScale,yScale,xPlatform,yPlatform) {
+	var that = this
+	//add a new Transitionable property for the frame
 	this.framePosition = new Transitionable([0, 0]);
+	//add a mouse sync, later to be piped to the surface
 	this.mouseFrameSync = new MouseSync();
+	//insert image surface with imageUrl reference
 	this.addImageSurface = new ImageSurface({
 		size: [500,322],
 		content: imageUrl,
@@ -87,10 +92,11 @@ function addFrame(imageUrl,xOrigin,yOrigin,xScale,yScale) {
 			zIndex: 10
 		}
 	});
+	//origin modifier specifying resting point off main platform
 	this.originModifier = new StateModifier({
 		transform: Transform.translate(xOrigin, yOrigin, 0)
 	});
-
+	//
 	this.scaleModifier = new StateModifier({
 		transform: Transform.scale(xScale, yScale, 1)
 	})
@@ -103,7 +109,8 @@ function addFrame(imageUrl,xOrigin,yOrigin,xScale,yScale) {
 	});
 
 	this.addImageSurface.pipe(this.mouseFrameSync);
-	var that = this
+	
+
 	this.mouseFrameSync.on('update', function(data){
 		var dx = data.delta[0];
 		var dy = data.delta[1];
@@ -123,34 +130,70 @@ function addFrame(imageUrl,xOrigin,yOrigin,xScale,yScale) {
 		console.log(inX,inY);
 		if (inX && inY) {
 			that.scaleModifier.setTransform(Transform.scale(1,1,1),{duration: 300})
-			snapToPlatform(that.framePosition,framePosition);
+			snapToPlatform(that.framePosition,[xPlatform,yPlatform]);
 
 		} else {
 			that.scaleModifier.setTransform(Transform.scale(.2,.2,1),{duration: 700})
-			snapBack(that.framePosition,jamaicanScaleModifier);
+			snapBack(that.framePosition,that.scaleModifier);
 		}
 		console.log(inX, inY)
 	});
 	mainContext.add(this.originModifier).add(this.positionModifier).add(this.scaleModifier).add(this.addImageSurface);
 }
 
-bomberBikeBitch = new addFrame('../images/bomber-frame.png',500,550,.2,.2);
+bomberBikeBitch = new addFrame('../images/bomber-frame.png',500,550,.2,.2,-150,-480);
 
 //Background and platform surface and origin modifiers
-var background = new Surface({
-	size: [1200, 850],
+// var background = new Surface({
+// 	size: [1200, 850],
+// 	properties: {
+// 		backgroundColor: 'white',
+// 		border: 'black solid 1px',
+// 		color: 'white'
+// 	}
+// });
+
+var platform = new Surface({
+	size: [1200, 480],
 	properties: {
-		backgroundColor: 'white',
+		backgroundColor: '#D60C00',
 		border: 'black solid 1px',
 		color: 'white'
 	}
 });
 
-var platform = new Surface({
-	size: [800, 480],
-	content: 'platform',
+var blackPlatformBorder = new Surface({
+	size: [1180, 460],
 	properties: {
-		backgroundColor: 'grey',
+		backgroundColor: 'black',
+		border: 'black solid 1px',
+		color: 'black'
+	}
+});
+
+var innerPlatform = new Surface({
+	size: [1160, 440],
+	properties: {
+		backgroundColor: '#F2DCC2',
+		border: 'black solid 1px',
+		color: '#BFB2A3'
+	}
+});
+
+
+var leftFrame = new Surface({
+	size: [100, 490],
+	properties: {
+		backgroundColor: '#5A86BF',
+		border: 'black solid 1px',
+		color: 'white'
+	}
+});
+
+var rightFrame = new Surface({
+	size: [100, 490],
+	properties: {
+		backgroundColor: '#5A86BF',
 		border: 'black solid 1px',
 		color: 'white'
 	}
@@ -160,8 +203,24 @@ var platformOriginModifier = new StateModifier({
 	transform: Transform.translate(100, 10, 0)
 })
 
+var innerPlatformOriginModifier = new StateModifier({
+	transform: Transform.translate(120, 30, 0)
+})
+
+var blackBorderOriginModifier = new StateModifier({
+	transform: Transform.translate(110, 20, 0)
+})
+
+var leftFrameOriginModifier = new StateModifier({
+	transform: Transform.translate(0, 0, 0)
+})
+
+var rightFrameOriginModifier = new StateModifier({
+	transform: Transform.translate(1300, 0, 0)
+})
+
 var bikeStats = new Surface({
-	size: [220, 250],
+	size: [220, 100],
 	content: 'Bike Stats',
 	properties: {
 		backgroundColor: 'white',
@@ -170,7 +229,7 @@ var bikeStats = new Surface({
 });
 
 var bikeStatsOriginModifier = new StateModifier({
-	transform: Transform.translate(940, 40, 0)
+	transform: Transform.translate(940, 500, 0)
 })
 
 var framePlatform = new Surface({
@@ -633,8 +692,12 @@ var vigorWheelLeftPositionModifier = new Modifier({
 	}
 });
 
-mainContext.add(background)
+// mainContext.add(background)
 mainContext.add(platformOriginModifier).add(platform);
+mainContext.add(innerPlatformOriginModifier).add(innerPlatform);
+mainContext.add(blackBorderOriginModifier).add(blackPlatformBorder);
+mainContext.add(leftFrameOriginModifier).add(leftFrame);
+mainContext.add(rightFrameOriginModifier).add(rightFrame);
 mainContext.add(framePlatformOriginModifier).add(framePlatform);
 mainContext.add(saddlePlatformOriginModifier).add(saddlePlatform);
 mainContext.add(wheelPlatformOriginModifier).add(wheelPlatform);
