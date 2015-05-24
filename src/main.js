@@ -7,6 +7,7 @@ var StateModifier = famous.modifiers.StateModifier;
 var Transform = famous.core.Transform;
 var Transitionable = famous.transitions.Transitionable;
 var ImageSurface = famous.surfaces.ImageSurface;
+var TextareaSurface = famous.surfaces.TextareaSurface;
 var Surface = famous.core.Surface;
 var MouseSync = famous.inputs.MouseSync;
 var Easing = famous.transitions.Easing;
@@ -78,18 +79,28 @@ var bikeStats = new Surface({
 	}
 });
 
-var frameTitle = new Surface({
+var frameHeading = new Surface({
 	size: [200, 50],
-	content: 'Frame Name',
+	content: 'Frame:',
 	properties: {
 		color: 'black',
-		fontSize: '1.3em'
+		fontSize: '1em',
+		textDecoration: 'underline'
+	}
+});
+
+var frameTitle = new Surface({
+	size: [200, 50],
+	content: 'Select Frame',
+	properties: {
+		color: 'black',
+		fontSize: '1.1em'
 	}
 });
 
 var framePrice = new Surface({
 	size: [70, 50],
-	content: '$500',
+	content: '$0',
 	properties: {
 		color: 'green',
 		fontSize: '1.4em',
@@ -97,12 +108,98 @@ var framePrice = new Surface({
 	}
 });
 
+var frameHeadingOriginModifier = new StateModifier({
+	transform: Transform.translate(1030, 60, 0)
+}); 
+
 var frameTitleOriginModifier = new StateModifier({
 	transform: Transform.translate(1030, 80, 0)
 }); 
 
 var framePriceOriginModifier = new StateModifier({
 	transform: Transform.translate(1190, 80, 0)
+});
+
+var wheelHeading = new Surface({
+	size: [200, 50],
+	content: 'Wheels:',
+	properties: {
+		color: 'black',
+		fontSize: '1em',
+		textDecoration: 'underline'
+	}
+});
+
+var wheelTitle = new Surface({
+	size: [200, 50],
+	content: 'Select Wheels',
+	properties: {
+		color: 'black',
+		fontSize: '1.1em'
+	}
+});
+
+var wheelPrice = new Surface({
+	size: [70, 50],
+	content: '$0',
+	properties: {
+		color: 'green',
+		fontSize: '1.4em',
+		fontFamily: 'Arial'
+	}
+});
+
+var wheelHeadingOriginModifier = new StateModifier({
+	transform: Transform.translate(1030, 160, 0)
+}); 
+
+var wheelTitleOriginModifier = new StateModifier({
+	transform: Transform.translate(1030, 180, 0)
+}); 
+
+var wheelPriceOriginModifier = new StateModifier({
+	transform: Transform.translate(1190, 180, 0)
+});
+
+var saddleHeading = new Surface({
+	size: [200, 50],
+	content: 'Saddle:',
+	properties: {
+		color: 'black',
+		fontSize: '1em',
+		textDecoration: 'underline'
+	}
+});
+
+var saddleTitle = new Surface({
+	size: [200, 50],
+	content: 'Select Saddle',
+	properties: {
+		color: 'black',
+		fontSize: '1.1em'
+	}
+});
+
+var saddlePrice = new Surface({
+	size: [70, 50],
+	content: '$0',
+	properties: {
+		color: 'green',
+		fontSize: '1.4em',
+		fontFamily: 'Arial'
+	}
+});
+
+var saddleHeadingOriginModifier = new StateModifier({
+	transform: Transform.translate(1030, 260, 0)
+}); 
+
+var saddleTitleOriginModifier = new StateModifier({
+	transform: Transform.translate(1030, 280, 0)
+}); 
+
+var saddlePriceOriginModifier = new StateModifier({
+	transform: Transform.translate(1190, 280, 0)
 });
 
 var bikeStatsOriginModifier = new StateModifier({
@@ -160,7 +257,7 @@ var saddlePlatform = new Surface({
 	size: [250, 200],
 	content: 'Saddles',
 	properties: {
-		backgroundColor: 'white',
+		backgroundColor: '#BFB2A3',
 		border: 'black solid 2px',
 		textAlign: 'center'
 	}
@@ -278,11 +375,13 @@ function addItem(imageUrl,xOrigin,yOrigin,xScale,yScale,xDeltaPlatform,yDeltaPla
 }
 
 // Arguments: imageUrl,xOrigin,yOrigin,xScale,yScale,xDeltaPlatform,yDeltaPlatform,xSize,ySize
-jamaicanBike = new addItem('../images/jamaican-frame.png',120,570,.2,.2,170,-485,500,322,1,1,'frame',10,'Jamaican Frame',500);
+jamaicanBike = new addItem('../images/jamaican-frame.png',120,570,.2,.2,170,-485,500,322,1,1,'frame',10,'Jamaican',500);
 bomberBike = new addItem('../images/bomber-frame.png',120,650,.2,.2,170,-568,500,322,1,1,'frame',10,'Bomber',550);
 
 vigorWheel = new addItem('../images/vigor-wheel-large.png',650,585,.2,.2,-490,-400,300,300,1,1,'wheel',1,'Vigor FX',800);
+stateWheel = new addItem('../images/state-wheel.png',650,660,.2,.2,-490,-475,300,300,1,1,'wheel',1,'State Bicycle',120);
 brooksSaddleNew = new addItem('../images/brooks-black.png',1080,585,.3,.3,-735, -535,198,152,.7,.7,'saddle',1,'Brooks B17',80)
+stateSaddleNew = new addItem('../images/state-saddle.png',1080,655,.45,.45,-722, -588,130,93,.8,.8,'saddle',1,'State Bicycle',50)
 
 
 
@@ -305,9 +404,15 @@ function snapBack(trans,scaleMod) {
 
 function setActiveItemInfo(itemType,itemName,itemPrice) {
 	if (itemType == 'frame') {
-		console.log('setting frame price')
-		framePrice['content'] = itemPrice;
-		frameTitle['content'] = itemName;
+		console.log('setting frame price',itemType,itemName,itemPrice)
+		framePrice.setContent('$' + itemPrice);
+		frameTitle.setContent(itemName);
+	} else if (itemType == 'wheel') {
+		wheelTitle.setContent(itemName);
+		wheelPrice.setContent('$' + itemPrice);
+	} else if (itemType == 'saddle') {
+		saddleTitle.setContent(itemName);
+		saddlePrice.setContent('$' + itemPrice);
 	}
 }
 
@@ -317,6 +422,13 @@ mainContext.add(platformOriginModifier).add(platform);
 mainContext.add(innerPlatformOriginModifier).add(innerPlatform);
 mainContext.add(blackBorderOriginModifier).add(blackPlatformBorder);
 mainContext.add(bikeStatsOriginModifier).add(bikeStats);
+mainContext.add(saddleTitleOriginModifier).add(saddleTitle);
+mainContext.add(saddlePriceOriginModifier).add(saddlePrice);
+mainContext.add(saddleHeadingOriginModifier).add(saddleHeading);
+mainContext.add(wheelTitleOriginModifier).add(wheelTitle);
+mainContext.add(wheelPriceOriginModifier).add(wheelPrice);
+mainContext.add(wheelHeadingOriginModifier).add(wheelHeading);
+mainContext.add(frameHeadingOriginModifier).add(frameHeading);
 mainContext.add(frameTitleOriginModifier).add(frameTitle);
 mainContext.add(framePriceOriginModifier).add(framePrice);
 mainContext.add(framePlatformOriginModifier).add(framePlatform);
